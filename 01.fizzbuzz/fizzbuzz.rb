@@ -1,11 +1,11 @@
-(1..20).each do |x|
-  if x % 3 == 0 && x % 5 == 0
+(1..20).each do |n|
+  if n % 3 == 0 && n % 5 == 0
     puts "FizzBuzz"
-  elsif x % 5 == 0
+  elsif n % 5 == 0
     puts "Buzz"
-  elsif  x % 3 == 0
+  elsif n % 3 == 0
     puts "Fizz"
   else
-    puts x
+    puts n
   end
 end
