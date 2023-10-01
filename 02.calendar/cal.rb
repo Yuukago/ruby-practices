@@ -20,22 +20,18 @@ puts "      #{m}月 #{y}"
 puts "日 月 火 水 木 金 土"
 
 # ３行目  1日の前にある空白を配列にする。
-youbi = Date.new(y, m, 1).wday 
+weeks = Date.new(y, m, 1).wday 
 spaces = []
-youbi.times do
+weeks.times do
   spaces << "  "
 end
 
 # その月の1日~末日までを配列にする。
-first_day = Date.new(y, m, 1)
-last_day = Date.new(y, m, -1)
+first_day = Date.new(y, m, 1).day
+last_day = Date.new(y, m, -1).day
 days = []
-(first_day..last_day).each do |d|
-  if d.day < 10
-    days << " " + d.day.to_s
-  else 
-    days << d.day
-  end
+(first_day..last_day).each do |i|
+  days << i.to_s.rjust(2)
 end
 
 # 土曜日で改行されるようにする。
