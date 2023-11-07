@@ -41,11 +41,11 @@ flames.each_with_index do |frame, index|
 
   elsif frame.sum == 10 # スペア
     # 10フレーム目がスペアだった場合
-    if index >= 9
-      point += frame.sum
-    else
-      point += frame.sum + next_flame[0]
-    end
+    point += if index >= 9
+               frame.sum
+             else
+               frame.sum + next_flame[0]
+             end
   else
     point += frame.sum
   end
