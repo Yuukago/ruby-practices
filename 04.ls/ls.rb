@@ -9,14 +9,13 @@ end
 
 def display_files(file)
   max_widths = file.flatten.map(&:size).max + 8
-
-  file.each do |array|
-    array.each do |element|
-      print element.ljust(max_widths)
+  file.each do |one_column_display|
+    one_column_display.each do |column_item|
+      print column_item.ljust(max_widths)
     end
     puts
   end
 end
 
-split_arrays = file_list(3)
-display_files(split_arrays)
+file_columns = file_list(3)
+display_files(file_columns)
