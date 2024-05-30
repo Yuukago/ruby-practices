@@ -1,7 +1,21 @@
 # frozen_string_literal: true
 
+require 'optparse'
+
+def optional_hangar
+  opt = OptionParser.new
+  file_with_options = []
+  opt.on('-a') { file_with_options = Dir.glob('*', File::FNM_DOTMATCH) }
+  opt.parse!(ARGV)
+  file_with_options
+end
+
 def load_filenames_into_matrix(column)
-  files = Dir.glob('*')
+  files = if ARGV[0]&.match?(/^-./)
+            optional_hangar
+          else
+            Dir.glob('*')
+          end
   surplus = files.size % column
   (column - surplus).times { files.push('') } unless surplus.zero?
   files.each_slice(files.size / column).to_a.transpose
