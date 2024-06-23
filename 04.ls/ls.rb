@@ -2,7 +2,7 @@
 
 require 'optparse'
 
-def parsing_options
+def parse_options
   opt = OptionParser.new
   options = {}
   opt.on('-a') { options[:a] = true }
@@ -10,12 +10,9 @@ def parsing_options
   options
 end
 
-def load_filenames_into_matrix(options)
-  if options[:a]
-    Dir.glob('*', File::FNM_DOTMATCH)
-  else
-    Dir.glob('*')
-  end
+def load_filenames(options)
+  flags = options[:a] ? File::FNM_DOTMATCH : 0
+  Dir.glob("*", flags)
 end
 
 def display_filename_matrix(file, column)
@@ -31,6 +28,6 @@ def display_filename_matrix(file, column)
   end
 end
 
-options = parsing_options
-filename_matrix = load_filenames_into_matrix(options)
+options = parse_options
+filename_matrix = load_filenames(options)
 display_filename_matrix(filename_matrix, 3)
