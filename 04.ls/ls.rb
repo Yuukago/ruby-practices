@@ -12,10 +12,11 @@ end
 
 def load_filenames(options)
   flags = options[:a] ? File::FNM_DOTMATCH : 0
-  Dir.glob("*", flags)
+  Dir.glob('*', flags)
 end
 
 def display_filename_matrix(file, column)
+  file << '' if file.empty?
   surplus = file.size % column
   (column - surplus).times { file.push('') } unless surplus.zero?
   columnar_file_list = file.each_slice(file.size / column).to_a.transpose
