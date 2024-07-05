@@ -1,15 +1,27 @@
 # frozen_string_literal: true
 
-def load_filenames_into_matrix(column)
-  files = Dir.glob('*')
-  surplus = files.size % column
-  (column - surplus).times { files.push('') } unless surplus.zero?
-  files.each_slice(files.size / column).to_a.transpose
+require 'optparse'
+
+def parse_options
+  opt = OptionParser.new
+  options = {}
+  opt.on('-a') { options[:a] = true }
+  opt.parse!(ARGV)
+  options
 end
 
-def display_filename_matrix(file)
-  max_widths = file.flatten.map(&:size).max + 8
-  file.each do |one_column_display|
+def load_filenames(options)
+  flags = options[:a] ? File::FNM_DOTMATCH : 0
+  Dir.glob('*', flags)
+end
+
+def display_filename_matrix(file, column)
+  file << '' if file.empty?
+  surplus = file.size % column
+  (column - surplus).times { file.push('') } unless surplus.zero?
+  columnar_file_list = file.each_slice(file.size / column).to_a.transpose
+  max_widths = columnar_file_list.flatten.map(&:size).max + 8
+  columnar_file_list.each do |one_column_display|
     one_column_display.each do |column_item|
       print column_item.ljust(max_widths)
     end
@@ -17,5 +29,6 @@ def display_filename_matrix(file)
   end
 end
 
-filename_matrix = load_filenames_into_matrix(3)
-display_filename_matrix(filename_matrix)
+options = parse_options
+filename_matrix = load_filenames(options)
+display_filename_matrix(filename_matrix, 3)
