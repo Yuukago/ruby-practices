@@ -6,14 +6,13 @@ def parse_options
   opt = OptionParser.new
   options = {}
   opt.on('-a') { options[:a] = true }
-  opt.on('-r') { options[:r] = true }
   opt.parse!(ARGV)
   options
 end
 
 def load_filenames(options)
   flags = options[:a] ? File::FNM_DOTMATCH : 0
-  options[:r] ? Dir.glob('*', flags).reverse : Dir.glob('*', flags)
+  Dir.glob('*', flags)
 end
 
 def display_filename_matrix(file, column)
