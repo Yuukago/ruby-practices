@@ -13,7 +13,8 @@ end
 
 def load_filenames(options)
   flags = options[:a] ? File::FNM_DOTMATCH : 0
-  options[:r] ? Dir.glob('*', flags).reverse : Dir.glob('*', flags)
+  filenames = Dir.glob('*', flags)
+  options[:r] ? filenames.reverse : filenames
 end
 
 def display_filename_matrix(file, column)
