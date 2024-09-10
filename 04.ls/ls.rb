@@ -35,34 +35,66 @@ def display_filename_matrix(file, column)
 end
 
 # ここからlオプション
+PERMISSION_CODES = {
+  '7' => 'rwx',
+  '6' => 'rw-',
+  '5' => 'r-x',
+  '4' => 'r--',
+  '3' => '-wx',
+  '2' => '-w-',
+  '1' => '--x',
+  '0' => '---'
+}.freeze
+
 def permission_and_filetype(file_detail_information)
   filetype = file_detail_information.ftype == 'file' ? '-' : 'd'
   permission = file_detail_information.mode.to_s(8).slice(-3..-1).chars
-  permission_codes = { '7' => 'rwx', '6' => 'rw-', '5' => 'r-x', '4' => 'r--', '3' => '-wx', '2' => '-w-', '1' => '--x', '0' => '---' }
-  filetype + permission.map { |n| permission_codes[n] }.join
+  filetype + permission.map { |n| PERMISSION_CODES[n] }.join
+end
+
+def last_updated(file_detail_information)
+  last_updated = file_detail_information.mtime
+  half_year_ago = Date.today << 6
+  time_or_year = last_updated.to_date >= half_year_ago ? last_updated.strftime('%H:%M') : last_updated.year.to_s.rjust(5)
+  "#{last_updated.mon.to_s.rjust(2)} #{last_updated.day.to_s.rjust(2)} #{time_or_year}"
+end
+
+def collect_file_details(file_detail_information)
+  file_detail_information.map do |file|
+    permission_and_filetype = permission_and_filetype(File::Stat.new(file))
+    last_updated = last_updated(File::Stat.new(file))
+    {
+      permission: permission_and_filetype,
+      nlink: File::Stat.new(file).nlink.to_s,
+      username: Etc.getpwuid(File::Stat.new(file).uid).name,
+      groupname: Etc.getgrgid(File::Stat.new(file).gid).name,
+      filesize: File::Stat.new(file).size.to_s,
+      time: last_updated,
+      filename: file
+    }
+  end
 end
 
 def l_option(files_in_the_directory)
   total_blocks = files_in_the_directory.sum { |file| File::Stat.new(file).blocks }
   puts "total #{total_blocks}"
+  collect_file_details = collect_file_details(files_in_the_directory)
   max_width = {
-    nlink: files_in_the_directory.map { |file| File::Stat.new(file).nlink.to_s.size }.max,
-    username: files_in_the_directory.map { |file| Etc.getpwuid(File::Stat.new(file).uid).name.size }.max,
-    groupname: files_in_the_directory.map { |file| Etc.getgrgid(File::Stat.new(file).gid).name.size }.max,
-    size: files_in_the_directory.map { |file| File::Stat.new(file).size.to_s.size }.max
+    nlink: collect_file_details.map { |file_information| file_information[:nlink].size }.max,
+    username: collect_file_details.map { |file_information| file_information[:username].size }.max,
+    groupname: collect_file_details.map { |file_information| file_information[:groupname].size }.max,
+    filesize: collect_file_details.map { |file_information| file_information[:filesize].size }.max
   }
-  files_in_the_directory.each do |file|
-    file_detail_information = File::Stat.new(file)
-    permissions_and_type = permission_and_filetype(file_detail_information)
-    username = Etc.getpwuid(file_detail_information.uid).name.rjust(max_width[:username])
-    groupname = Etc.getgrgid(file_detail_information.gid).name.rjust(max_width[:groupname])
-    size = file_detail_information.size.to_s.rjust(max_width[:size])
-    last_updated = file_detail_information.mtime
-    half_year_ago = Date.today << 6
-    time_or_year = last_updated.to_date >= half_year_ago ? last_updated.strftime('%H:%M') : last_updated.year.to_s.rjust(5)
-    last_updateds = "#{last_updated.mon.to_s.rjust(2)} #{last_updated.day.to_s.rjust(2)} #{time_or_year}"
-
-    puts "#{permissions_and_type}  #{file_detail_information.nlink} #{username}  #{groupname}  #{size} #{last_updateds} #{file}"
+  collect_file_details.each do |file|
+    puts [
+      file[:permission],
+      file[:nlink].rjust(max_width[:nlink]),
+      file[:username].rjust(max_width[:username]),
+      file[:groupname].rjust(max_width[:groupname]),
+      file[:filesize].rjust(max_width[:filesize]),
+      file[:time],
+      file[:filename]
+    ].join('  ')
   end
 end
 
