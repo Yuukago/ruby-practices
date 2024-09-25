@@ -46,10 +46,20 @@ PERMISSION_CODES = {
   '0' => '---'
 }.freeze
 
+FILE_TYPE = {
+  'file' => '-',
+  'directory' => 'd',
+  'characterSpecial' => 'c',
+  'blockSpecial' => 'b',
+  'fifo' => 'p',
+  'link' => 'l',
+  'socket' => 's',
+  'unknown' => '?'
+}.freeze
+
 def permission_and_filetype(file_detail_information)
-  filetype = file_detail_information.ftype == 'file' ? '-' : 'd'
   permission = file_detail_information.mode.to_s(8).slice(-3..-1).chars
-  filetype + permission.map { |n| PERMISSION_CODES[n] }.join
+  FILE_TYPE[file_detail_information.ftype] + permission.map { |n| PERMISSION_CODES[n] }.join
 end
 
 def last_updated(file_detail_information)
@@ -61,21 +71,19 @@ end
 
 def collect_file_details(file_detail_information)
   file_detail_information.map do |file|
-    permission_and_filetype = permission_and_filetype(File::Stat.new(file))
-    last_updated = last_updated(File::Stat.new(file))
     {
-      permission: permission_and_filetype,
+      permission: permission_and_filetype(File::Stat.new(file)),
       nlink: File::Stat.new(file).nlink.to_s,
       username: Etc.getpwuid(File::Stat.new(file).uid).name,
       groupname: Etc.getgrgid(File::Stat.new(file).gid).name,
       filesize: File::Stat.new(file).size.to_s,
-      time: last_updated,
+      time: last_updated(File::Stat.new(file)),
       filename: file
     }
   end
 end
 
-def l_option(files_in_the_directory)
+def list_file_details(files_in_the_directory)
   total_blocks = files_in_the_directory.sum { |file| File::Stat.new(file).blocks }
   puts "total #{total_blocks}"
   collect_file_details = collect_file_details(files_in_the_directory)
@@ -100,4 +108,4 @@ end
 
 options = parse_options
 filename_matrix = load_filenames(options)
-options[:l] ? l_option(filename_matrix) : display_filename_matrix(filename_matrix, 3)
+options[:l] ? list_file_details(filename_matrix) : display_filename_matrix(filename_matrix, 3)
