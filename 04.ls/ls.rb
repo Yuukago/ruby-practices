@@ -71,13 +71,14 @@ end
 
 def collect_file_details(file_detail_information)
   file_detail_information.map do |file|
+    file_stat = File.lstat(file)
     {
-      permission: permission_and_filetype(File::Stat.new(file)),
-      nlink: File::Stat.new(file).nlink.to_s,
-      username: Etc.getpwuid(File::Stat.new(file).uid).name,
-      groupname: Etc.getgrgid(File::Stat.new(file).gid).name,
-      filesize: File::Stat.new(file).size.to_s,
-      time: last_updated(File::Stat.new(file)),
+      permission: permission_and_filetype(file_stat),
+      nlink: file_stat.nlink.to_s,
+      username: Etc.getpwuid(file_stat.uid).name,
+      groupname: Etc.getgrgid(file_stat.gid).name,
+      filesize: file_stat.size.to_s,
+      time: last_updated(file_stat),
       filename: file
     }
   end
